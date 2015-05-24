@@ -27,6 +27,10 @@ namespace rm.MsmqSample
             msmqProcessor.Send(new SampleSender().GetItems());
             // receive from queues
             msmqProcessor.Receive();
+            // send to queue
+            msmqProcessor.Send(new SampleSender().GetItems());
+            // receive from queues
+            msmqProcessor.Receive();
         }
     }
 }
