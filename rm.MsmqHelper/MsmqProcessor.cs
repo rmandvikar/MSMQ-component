@@ -128,9 +128,8 @@ namespace rm.MsmqHelper
                     items = GetNextBatch(q, batchCount, ref isLastBatch);
                     processCallback(items);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
-                    // note: Log.Error(ex);
                     var fallbackQueue = MsmqUtility.GetFallbackQueue(q, Queues);
                     Send(items, fallbackQueue);
                 }
