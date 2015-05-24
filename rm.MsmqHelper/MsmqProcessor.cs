@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Messaging;
 
@@ -22,6 +23,7 @@ namespace rm.MsmqHelper
         protected readonly int queueBatchCount;
         protected readonly TimeSpan receiveTimeout;
         protected readonly MessageQueue[] queues;
+        protected readonly IReceiver<T> receiver;
 
         #endregion
 
@@ -32,7 +34,8 @@ namespace rm.MsmqHelper
             MessageQueue errorQueue,
             MessageQueue fatalQueue,
             int queueBatchCount,
-            TimeSpan receiveTimeout
+            TimeSpan receiveTimeout,
+            IReceiver<T> receiver
             )
         {
             this.queue = queue;
@@ -41,6 +44,7 @@ namespace rm.MsmqHelper
             this.queueBatchCount = queueBatchCount;
             this.receiveTimeout = receiveTimeout;
             this.queues = new[] { queue, errorQueue, fatalQueue };
+            this.receiver = receiver;
         }
 
         #endregion
@@ -50,7 +54,7 @@ namespace rm.MsmqHelper
         /// <summary>
         /// Send items to the <paramref name="Queue"/>.
         /// </summary>
-        public void Send(T[] items)
+        public void Send(IEnumerable<T> items)
         {
             Send(items, Queue);
         }
@@ -59,10 +63,10 @@ namespace rm.MsmqHelper
         /// Receive from <paramref name="Queue"/> in batches of <paramref name="QueueBatchCount"/>.
         /// Then, receive from <paramref name="ErrorQueue"/> one item at a time.
         /// </summary>
-        public void Receive(Action<T[]> processCallback)
+        public void Receive()
         {
-            Receive(Queue, QueueBatchCount, processCallback);
-            Receive(ErrorQueue, 1, processCallback);
+            Receive(Queue, QueueBatchCount);
+            Receive(ErrorQueue, 1);
         }
 
         public MessageQueue Queue
@@ -95,12 +99,17 @@ namespace rm.MsmqHelper
             get { return receiveTimeout; }
         }
 
+        public IReceiver<T> Receiver
+        {
+            get { return receiver; }
+        }
+
         #endregion
 
         /// <summary>
         /// Send items to the <paramref name="q"/>.
         /// </summary>
-        protected void Send(T[] items, MessageQueue q)
+        protected void Send(IEnumerable<T> items, MessageQueue q)
         {
             if (items != null)
             {
@@ -115,9 +124,9 @@ namespace rm.MsmqHelper
         }
         /// <summary>
         /// Receive from <paramref name="q"/> in batches of <paramref name="batchCount"/> and 
-        /// process the items using the <paramref name="processCallback"/>.
+        /// hand off to <paramref name="Receiver"/>.
         /// </summary>
-        protected void Receive(MessageQueue q, int batchCount, Action<T[]> processCallback)
+        protected void Receive(MessageQueue q, int batchCount)
         {
             var isLastBatch = false;
             while (!isLastBatch)
@@ -126,7 +135,7 @@ namespace rm.MsmqHelper
                 try
                 {
                     items = GetNextBatch(q, batchCount, ref isLastBatch);
-                    processCallback(items);
+                    receiver.Receive(items);
                 }
                 catch (Exception)
                 {

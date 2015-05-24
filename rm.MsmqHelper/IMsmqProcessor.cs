@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Messaging;
 
 namespace rm.MsmqHelper
@@ -46,14 +47,18 @@ namespace rm.MsmqHelper
         /// </summary>
         TimeSpan ReceiveTimeout { get; }
         /// <summary>
+        /// The receiver receives the items received from queues.
+        /// </summary>
+        IReceiver<T> Receiver { get; }
+        /// <summary>
         /// Send items to the <paramref name="Queue"/>.
         /// </summary>
-        void Send(T[] items);
+        void Send(IEnumerable<T> items);
         /// <summary>
-        /// Receive items from <paramref name="Queue"/> in batches and process them using <paramref name="processCallback"/>.
+        /// Receive items from <paramref name="Queue"/> in batches and hand off to <paramref name="Receiver"/>.
         /// <para></para>
-        /// The <paramref name="processCallback"/> should not swallow exception.
+        /// The <paramref name="Receiver"/> should not swallow exception.
         /// </summary>
-        void Receive(Action<T[]> processCallback);
+        void Receive();
     }
 }

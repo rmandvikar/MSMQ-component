@@ -17,7 +17,8 @@ namespace rm.MsmqHelperTest
         public void Test_Ex()
         {
             var msmqProcessor = new MsmqProcessor<Sample>(
-                queue, errorQueue, fatalQueue, 4, TimeSpan.FromMilliseconds(100)
+                queue, errorQueue, fatalQueue, 4, TimeSpan.FromMilliseconds(100),
+                new SampleReceiver()
                 );
             MsmqUtility.PurgeAll(msmqProcessor.Queues);
 
@@ -25,14 +26,13 @@ namespace rm.MsmqHelperTest
             Assert.AreEqual(0, errorQueue.GetAllMessages().Length);
             Assert.AreEqual(0, fatalQueue.GetAllMessages().Length);
 
-            var sampleSenderReceiver = new SampleSenderReceiver();
-            msmqProcessor.Send(sampleSenderReceiver.GetItems());
+            msmqProcessor.Send(new SampleSender().GetItems());
 
             Assert.AreEqual(10, queue.GetAllMessages().Length);
             Assert.AreEqual(0, errorQueue.GetAllMessages().Length);
             Assert.AreEqual(0, fatalQueue.GetAllMessages().Length);
 
-            msmqProcessor.Receive(sampleSenderReceiver.ProcessItems_Ex);
+            msmqProcessor.Receive();
 
             Assert.AreEqual(0, queue.GetAllMessages().Length);
             Assert.AreEqual(0, errorQueue.GetAllMessages().Length);
@@ -42,7 +42,8 @@ namespace rm.MsmqHelperTest
         public void Test_NoEx()
         {
             var msmqProcessor = new MsmqProcessor<Sample>(
-                queue, errorQueue, fatalQueue, 4, TimeSpan.FromMilliseconds(100)
+                queue, errorQueue, fatalQueue, 4, TimeSpan.FromMilliseconds(100),
+                new SampleReceiver_NoEx()
                 );
             MsmqUtility.PurgeAll(msmqProcessor.Queues);
 
@@ -50,14 +51,13 @@ namespace rm.MsmqHelperTest
             Assert.AreEqual(0, errorQueue.GetAllMessages().Length);
             Assert.AreEqual(0, fatalQueue.GetAllMessages().Length);
 
-            var sampleSenderReceiver = new SampleSenderReceiver();
-            msmqProcessor.Send(sampleSenderReceiver.GetItems());
+            msmqProcessor.Send(new SampleSender().GetItems());
 
             Assert.AreEqual(10, queue.GetAllMessages().Length);
             Assert.AreEqual(0, errorQueue.GetAllMessages().Length);
             Assert.AreEqual(0, fatalQueue.GetAllMessages().Length);
 
-            msmqProcessor.Receive(sampleSenderReceiver.ProcessItems_NoEx);
+            msmqProcessor.Receive();
 
             Assert.AreEqual(0, queue.GetAllMessages().Length);
             Assert.AreEqual(0, errorQueue.GetAllMessages().Length);

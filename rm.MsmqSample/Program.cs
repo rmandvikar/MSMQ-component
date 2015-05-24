@@ -18,16 +18,15 @@ namespace rm.MsmqSample
                 MsmqUtility.GetQueue(@".\private$\errorQueue"),
                 MsmqUtility.GetQueue(@".\private$\fatalQueue"),
                 4,
-                TimeSpan.FromMilliseconds(100)
+                TimeSpan.FromMilliseconds(100),
+                new SampleReceiver()
                 );
             // start clean for demo
             MsmqUtility.PurgeAll(msmqProcessor.Queues);
-            // sender/receiver
-            var sampleSenderReceiver = new SampleSenderReceiver();
             // send to queue
-            msmqProcessor.Send(sampleSenderReceiver.GetItems());
+            msmqProcessor.Send(new SampleSender().GetItems());
             // receive from queues
-            msmqProcessor.Receive(sampleSenderReceiver.ProcessItems_Ex);
+            msmqProcessor.Receive();
         }
     }
 }

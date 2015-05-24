@@ -1,25 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using rm.MsmqHelper;
 
 namespace rm.MsmqSample
 {
     /// <summary>
-    /// Demo class to create and process items.
+    /// Demo class to create and process items. Throws exception to simulate.
     /// </summary>
-    public class SampleSenderReceiver
+    public class SampleReceiver : IReceiver<Sample>
     {
         [DebuggerStepThrough]
-        public Sample[] GetItems()
-        {
-            var items = new Sample[10];
-            for (int i = 0; i < items.Length; i++)
-            {
-                items[i] = new Sample() { Id = i, Name = "sample" + i };
-            }
-            return items;
-        }
-        [DebuggerStepThrough]
-        public void ProcessItems_Ex(Sample[] items)
+        public void Receive(IEnumerable<Sample> items)
         {
             Console.WriteLine("process ...");
             var throwEx = false;
@@ -42,8 +34,15 @@ namespace rm.MsmqSample
             }
             Console.WriteLine();
         }
+    }
+
+    /// <summary>
+    /// Demo class to create and process items. Does not throw exception.
+    /// </summary>
+    public class SampleReceiver_NoEx : IReceiver<Sample>
+    {
         [DebuggerStepThrough]
-        public void ProcessItems_NoEx(Sample[] items)
+        public void Receive(IEnumerable<Sample> items)
         {
             Console.WriteLine("process ...");
             foreach (var item in items)
