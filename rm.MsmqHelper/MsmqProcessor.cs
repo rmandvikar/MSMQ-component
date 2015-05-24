@@ -24,7 +24,8 @@ namespace rm.MsmqHelper
         protected readonly TimeSpan receiveTimeout;
         protected readonly MessageQueue[] queues;
         protected readonly IReceiver<T> receiver;
-
+        private IDictionary<MessageQueue, MessageQueue> fallbackQueuesMap
+            = new Dictionary<MessageQueue, MessageQueue>();
         #endregion
 
         #region ctors
@@ -45,6 +46,9 @@ namespace rm.MsmqHelper
             this.receiveTimeout = receiveTimeout;
             this.queues = new[] { queue, errorQueue, fatalQueue };
             this.receiver = receiver;
+
+            fallbackQueuesMap[queue] = errorQueue;
+            fallbackQueuesMap[errorQueue] = fatalQueue;
         }
 
         #endregion
@@ -139,7 +143,7 @@ namespace rm.MsmqHelper
                 }
                 catch (Exception)
                 {
-                    var fallbackQueue = MsmqUtility.GetFallbackQueue(q, Queues);
+                    var fallbackQueue = GetFallbackQueue(q);
                     Send(items, fallbackQueue);
                 }
             }
@@ -174,6 +178,17 @@ namespace rm.MsmqHelper
                 }
             }
             return count == batchCount ? items : items.Take(count).ToArray();
+        }
+        /// <summary>
+        /// Get fallback queue for <paramref name="q"/>.
+        /// </summary>
+        private MessageQueue GetFallbackQueue(MessageQueue q)
+        {
+            if (!fallbackQueuesMap.ContainsKey(q))
+            {
+                throw new ApplicationException("No fallback queue.");
+            }
+            return fallbackQueuesMap[q];
         }
     }
 }

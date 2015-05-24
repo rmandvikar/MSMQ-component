@@ -25,21 +25,6 @@ namespace rm.MsmqHelper
             return q;
         }
         /// <summary>
-        /// Gets the fallback queue for given queue out of the queues array.
-        /// </summary>
-        public static MessageQueue GetFallbackQueue(MessageQueue q, MessageQueue[] queues)
-        {
-            if (q.QueueName == queues[0].QueueName)
-            {
-                return queues[1];
-            }
-            else if (q.QueueName == queues[1].QueueName)
-            {
-                return queues[2];
-            }
-            throw new ApplicationException("No fallback queue.");
-        }
-        /// <summary>
         /// Purge given queues.
         /// </summary>
         public static void PurgeAll(MessageQueue[] queues)
