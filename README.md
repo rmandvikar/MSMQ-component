@@ -3,14 +3,14 @@ MSMQ-component
 
 MSMQ component to send/receive items.
 
-####Algorithm:
+#### Algorithm:
 
 * `Send`: The items are sent to the `Queue`.
 * `Receive`: The `Queue` is received in batches and each batch of items is handed off to `receiver`. On exception, the whole batch of items is sent to the `ErrorQueue`. The `ErrorQueue` is received one item at a time and each item is handed off to `receiver`. On exception, the item is sent to the `FatalQueue`. The `FatalQueue` is not received at all and will contain items that throw.
 
 Note: `Send` and `Receive` run in same thread.
 
-####Example:
+#### Example:
 
 The MSMQ processor first sends sample items to the message queue and then receives them (in same thread).
 
